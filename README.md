@@ -1,6 +1,188 @@
-# Final-Lumber-Sorter
-Green's Lumber Sorter input and output
-The user is to input the job order ID
-They will then enter all of the pieces of wood that will be cut and shipped that that job order
-after all pieces are input, the user will recieve a document file
-with all of the information they had provided in a printable and readable fashion.
+"""
+Author: Elliott Green
+Date: 4/17/25
+Title: Green's Lumber Sorter
+Assignment: M06_ProgressReport
+Description: Enter a Batch Number for a job and the lumber that goes with it. 
+The program returns sorted details for cutting and stacking.
+"""
+
+import tkinter as tk
+from tkinter import ttk
+
+# ========== Initialize Variables ==========
+LUMBER_WIDTHS = {
+    "LVL": ["9 1/4", "11 7/8", "14", "16", "18", "20", "24"],
+    "LSL": ["11 7/8", "14"],
+    "RIM": ["11 7/8", "14", "16"],
+    "PSL": ["(3.5x3.5)", "(3.5x5.25)", "(5.25x5.25)", "(3.5x7)", "(5.25x7)", "(7x7)"]
+}
+
+# ========== Save to TXT File ==========
+def save_to_txt(job_details, stacks):
+    """Save job details and stacking optimization to a text file."""
+    job_id = job_details["Job ID"]
+    filename = f"Job_{job_id}.txt"
+
+    with open(filename, "w") as file:
+        # Write Job Header
+        file.write(f"Lumber Job ID: {job_id}\n")
+        file.write("=" * 40 + "\n")
+
+        # Full Lumber List, sorted by Lumber Type
+        file.write("Full Lumber List (Sorted by Lumber Type):\n")
+        sorted_picks = sorted(job_details["Picks"], key=lambda x: x["Lumber Type"])  # Sort by Lumber Type
+        for pick in sorted_picks:
+            file.write(f"{pick['Lumber Type']} | {pick['Width']} | {pick['Length']}\n")
+
+        # PSL Entries
+        file.write("\nPSL Entries (Excluded from Stacking):\n")
+        for pick in job_details["Picks"]:
+            if pick["Lumber Type"] == "PSL":
+                file.write(f"{pick['Lumber Type']} | {pick['Width']} | {pick['Length']}\n")
+
+        # Stacking Optimization
+        file.write("\nOptimized Stacking Configuration:\n")
+        for i, stack in enumerate(stacks):
+            layer_width = sum(int(pick["Width"].split()[0]) for pick in stack)
+            file.write(f"Layer {i + 1} (Total Width: {layer_width} inches):\n")
+            for pick in stack:
+                file.write(f"  {pick['Lumber Type']} | {pick['Width']} | {pick['Length']}\n")
+
+    print(f"Job saved to {filename}")
+
+# ========== Stacking Optimization ==========
+def optimize_stacking(picks):
+    """Optimize stacking to approach 48" width per layer."""
+    non_psl_picks = [pick for pick in picks if pick["Lumber Type"] != "PSL"]
+    picks_sorted = sorted(non_psl_picks, key=lambda x: int(x["Length"].split("'")[0]), reverse=True)
+
+    layers = []
+    while picks_sorted:
+        current_layer = []
+        current_width = 0
+
+        for pick in picks_sorted[:]:  
+            width = int(pick["Width"].split()[0])
+
+            if current_width + width <= 48:
+                current_layer.append(pick)
+                current_width += width
+                picks_sorted.remove(pick)
+
+        layers.append(current_layer)
+
+    return layers
+
+# ========== Main Application ==========
+class GreensLumberSorter:
+    def __init__(self, root):
+        """Initialize the main application."""
+        self.root = root
+        self.root.title("Green's Lumber Sorter")
+
+        self.job_details = {}
+        self.picks = []
+
+        self.main_menu()
+
+    def main_menu(self):
+        """Create the main menu."""
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        ttk.Label(self.root, text="Green's Lumber Sorter", font=("Helvetica", 16)).grid(row=0, column=0, columnspan=2, pady=10)
+        ttk.Button(self.root, text="Create New Pick List", command=self.create_job).grid(row=1, column=0, columnspan=2, pady=5)
+        ttk.Button(self.root, text="Exit", command=self.root.quit).grid(row=2, column=0, columnspan=2, pady=5)
+
+    def create_job(self):
+        """Set up the job entry screen."""
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        ttk.Label(self.root, text="Enter Job ID:").grid(row=0, column=0, padx=5, pady=5)
+        self.job_id_entry = ttk.Entry(self.root)
+        self.job_id_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Button(self.root, text="Start Job", command=self.lumber_entry).grid(row=1, column=0, columnspan=2, pady=10)
+
+    def lumber_entry(self):
+        """Lumber entry screen with type, width, and length."""
+        job_id = self.job_id_entry.get()
+        if not job_id:
+            return  
+
+        self.job_details["Job ID"] = job_id
+
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        ttk.Label(self.root, text="Select Lumber Type:").grid(row=0, column=0, padx=5, pady=5)
+        self.lumber_type = tk.StringVar(value="LVL")
+        for i, lt in enumerate(LUMBER_WIDTHS.keys()):
+            ttk.Radiobutton(self.root, text=lt, value=lt, variable=self.lumber_type, command=self.update_width_options).grid(row=1, column=i, padx=5)
+
+        ttk.Label(self.root, text="Select Width:").grid(row=2, column=0, padx=5, pady=5)
+        self.lumber_width_combo = ttk.Combobox(self.root, values=[], state="readonly")
+        self.lumber_width_combo.grid(row=2, column=1, padx=5, pady=5)
+
+        ttk.Label(self.root, text="Length (Feet-Inches-1/16):").grid(row=3, column=0, padx=5, pady=5)
+        self.feet_entry = ttk.Entry(self.root, width=5)
+        self.feet_entry.grid(row=3, column=1, padx=2)
+        ttk.Label(self.root, text="ft").grid(row=3, column=2)
+
+        self.inches_entry = ttk.Entry(self.root, width=5)
+        self.inches_entry.grid(row=3, column=3, padx=2)
+        ttk.Label(self.root, text="in").grid(row=3, column=4)
+
+        self.sixteenths_entry = ttk.Entry(self.root, width=5)
+        self.sixteenths_entry.grid(row=3, column=5, padx=2)
+        ttk.Label(self.root, text="/16").grid(row=3, column=6)
+
+        ttk.Button(self.root, text="Add to List", command=self.add_to_list).grid(row=4, column=0, pady=10)
+        ttk.Button(self.root, text="Complete Job", command=self.complete_job).grid(row=4, column=1, pady=10)
+
+        self.update_width_options()
+
+    def update_width_options(self):
+        """Update width dropdown options based on selected lumber type."""
+        selected_type = self.lumber_type.get()
+        self.lumber_width_combo["values"] = LUMBER_WIDTHS.get(selected_type, [])
+        self.lumber_width_combo.set("")  
+
+    def add_to_list(self):
+        """Add entered lumber details to the pick list."""
+        lumber_type = self.lumber_type.get()
+        width = self.lumber_width_combo.get()
+        feet = self.feet_entry.get() or "0"
+        inches = self.inches_entry.get() or "0"
+        sixteenths = self.sixteenths_entry.get() or "0"
+
+        length = f"{feet}' {inches}\" {sixteenths}/16"
+        self.picks.append({
+            "Lumber Type": lumber_type,
+            "Width": width,
+            "Length": length
+        })
+        print(f"Added: {lumber_type}, {width}, {length}")
+
+    def complete_job(self):
+        """Finalize job, save to file, and optimize stacking."""
+        self.job_details["Picks"] = sorted(self.picks, key=lambda x: x["Length"], reverse=True)
+        
+        optimized_stacks = optimize_stacking(self.job_details["Picks"])
+        save_to_txt(self.job_details, optimized_stacks)
+
+        print("\n--- Optimized Stacking Configuration ---")
+        for i, stack in enumerate(optimized_stacks):
+            print(f"Layer {i+1}:")
+            for item in stack:
+                print(f"  {item['Lumber Type']} | {item['Width']} | {item['Length']}")
+
+        self.main_menu()  # Return to Main Menu
+
+# ========== Run the Application ==========
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = GreensLumberSorter(root)
+    root.mainloop()
