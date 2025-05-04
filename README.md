@@ -15,7 +15,8 @@ After the list has been completed, the program will arrange the list
 #===============Instructions==============#
 
 Open program
-  By clicking on the .exe file
+  By clicking on the .exe file or by running the code 
+  where Python can see it.
 
 Enter job number (Ie: '123456')
   All data entered, after this, will be put into 
@@ -26,8 +27,8 @@ In any order, enter all of the lumber, with
   You can add as many as you need for the current job
 
 Once Complete, press, "Complete Job."
-  This will save your file for review or print later. 
+  This will save your file for review or to print later. 
 
 Continue through the same process until all lumber 
-  for all jobs has been entered. Your jobs' documentation 
+  for all jobs have been entered. Your jobs' documentation 
   will be in the folder you ran the program from. Thank you!
