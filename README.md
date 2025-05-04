@@ -8,7 +8,7 @@ After that, Based on the Lumber available to EWP 84 Lumber associates -
 After the list has been completed, the program will arrange the list
   as well as a stacking configuration for optimal stacking safety.
 
-~===============Instructions==============~
+#===============Instructions==============#
 Open program
   By clicking on the .exe file
 
