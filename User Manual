@@ -1,0 +1,59 @@
+Lumber Sorter User Manual
+Version: 1.0
+Author: Elliott Green
+Date: 5/8/25
+
+1. Introduction
+Welcome to the Lumber Sorter program! This tool allows users to input a batch number along with lumber dimensions, sorting the data for optimal cutting and stacking.
+Features:
+•	Simple data entry for job details.
+•	Automatic sorting of lumber by type, width, and length.
+•	Optimized stacking configuration to approach a 48-inch layer width.
+•	Saved job details in a .txt file for easy reference and printing.
+
+2. Installation & Requirements
+
+System Requirements:
+•	Operating System: Windows (recommended)
+•	Python Version: 3.9+
+•	Required Libraries:
+•	tkinter (built-in for GUI)
+•	PIL (pip install pillow for image handling)
+
+Setup Instructions:
+1.	Download the program folder.
+2.	Ensure lumber.ico and img1.png are correctly stored in the same directory as the script.
+3.	Open a terminal and run:
+python LumberSorter.py 
+
+
+3. Using the Program
+
+Startup Screen:
+When launched, the Lumber Sorter displays a main menu with the following options:
+✅ Create New Pick List: Enter details for a new lumber job.
+✅ Exit: Closes the program.
+
+Entering a Job:
+1.	Click Create New Pick List.
+2.	Enter a Job ID.
+3.	Select Lumber Type (LVL, LSL, PSL, etc.).
+4.	Choose Width from the dropdown.
+5.	Input Length (Feet, Inches, Sixteenths).
+6.	Click Add to List to register each piece.
+7.	Click Complete Job to finalize the process.
+
+Sorting & Stacking Optimization:
+•	Lumber is sorted automatically based on length and type.
+•	Non-PSL pieces are stacked to approach 48-inch width layers.
+•	The program generates a text file with details on the job structure.
+
+4. Saving & Accessing Job Files
+Completed jobs are stored in .txt format within the program folder:
+Example File Name Entry: 12345
+Example File Name: Job_12345.txt
+
+5. Customization Options
+🔹 Change UI layout → Modify grid() parameters.
+🔹 Edit lumber types → Adjust the LUMBER_WIDTHS dictionary.
+🔹 Change file output format → Modify save_to_txt() function.
